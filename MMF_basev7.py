@@ -1,5 +1,5 @@
 """
-Made the class "Person" to improve program
+Added Snacksv4.py
 """
 
 
@@ -8,6 +8,57 @@ import pandas
 
 
 # Functions
+def check_string(valid, question):
+    answer = input(question).lower()
+    if answer == "x":
+        return "quit"
+    for e in valid.keys():
+        if answer in valid[e]:
+            return e
+    return "Not valid"
+
+
+def get_snacks():
+    snackers = [0, 0, 0, 0]
+    while True:
+        reply = check_string(yes_no_dict, "Would you like some snacks? We've "
+                                          "got; popcorn, m&ms, pita chips, "
+                                          "and water. ")
+        if reply == "yes":
+            while True:
+                reply = check_string(snacks_dict, "\nWhat snacks would you like "
+                                                  "to order? Press 'x' to"
+                                                  " finish: ")
+                if reply != "Not valid" and reply != "quit":
+                    amount = check_int("How many of these do you want? ")
+                    if reply == "popcorn":
+                        snackers[0] += amount
+                    elif reply == "m&ms":
+                        snackers[1] += amount
+                    elif reply == "pita chips":
+                        snackers[2] += amount
+                    else:
+                        snackers[3] += amount
+                elif reply == "Not valid":
+                    print("That's not a snack!")
+                elif reply == "quit":
+                    for a in snackers:
+                        if a < 0:
+                            snackers[snackers.index(a)] = 0
+                    if snackers != [0, 0, 0, 0]:
+                        print("\nSummary of your order: ")
+                        print(f"You ordered {snackers[0]} popcorns")
+                        print(f"You ordered {snackers[1]} m&ms")
+                        print(f"You ordered {snackers[2]} pita chips")
+                        print(f"You ordered {snackers[3]} waters")
+                    return snackers
+        elif reply == "no":
+            print("Okay, no snacks")
+            return snackers
+        else:
+            print("That was not a valid answer, please type yes or no")
+
+
 def name_not_blank(question):
     while True:
         namer = input(question).title()
@@ -44,10 +95,14 @@ def price_check(user_age):
 
 
 class Person:
-    def __init__(self, age_, ticket_price, person):
+    def __init__(self, age_, ticket_price, person, popcorns, mms, pc, waters):
         self.age_ = age_
         self.ticket_price = ticket_price
         self.person = person
+        self.mms = mms
+        self.popcorns = popcorns
+        self.pc = pc
+        self.waters = waters
 
 
 # Main routine
@@ -68,6 +123,11 @@ profit = 0
 names = []
 namers = []
 ticket_prices = []
+yes_no_dict = {"yes": ["yes", "y"], "no": ["no", "n"]}
+snacks_dict = {"popcorn": ["popcorn", "corn", "1", "p"],
+               "m&ms": ["m&ms", "mms", "m", "2"],
+               "pita chips": ["pita chips", "chips", "pc", "pita", "c", "3"],
+               "water": ["water", "w", "4"]}
 while ticket_count != TICKETS and name != "Xxx":
     if TICKETS - ticket_count > 1:
         print(f"\nYou have {TICKETS - ticket_count} tickets left")
@@ -88,7 +148,9 @@ while ticket_count != TICKETS and name != "Xxx":
                     print(f"The price for {name}'s ticket is"
                           f" ${price_check(age):.2f}")
                     profit += price_check(age) - TICKET_COST_PRICE
-                    appender = Person(age, price_check(age), name)
+                    snacks = get_snacks()
+                    appender = Person(age, price_check(age), name, snacks[0],
+                                      snacks[1], snacks[2], snacks[3])
                     names.append(appender)
                     break
                 else:
