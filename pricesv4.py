@@ -1,5 +1,5 @@
 """
-Added ticket price function
+Added a profit attribute
 """
 
 
@@ -18,6 +18,31 @@ def price_check(user_age):
     return ticket_price
 
 
+def check_string(valid, question):
+    answer = input(question).lower()
+    if answer == "x":
+        return "quit"
+    for e in valid.keys():
+        if answer in valid[e]:
+            return e
+    return "Not valid"
+
+
+def surcharge(amount):
+    while True:
+        payment_method = check_string(pay_choices, "\nWhat payment method "
+                                                   "will you be using; "
+                                                   "credit or cash? ")
+        if payment_method == "quit" or payment_method == "Not valid":
+            print("Sorry, that's not a payment method")
+        else:
+            break
+    if payment_method == "credit":
+        return amount * SURCHARGE_MULTIPLIER
+    else:
+        return 0
+
+
 def snack_price_(corn, mms, pc, water):
     total = 0
     total += POPCORN * corn
@@ -27,6 +52,10 @@ def snack_price_(corn, mms, pc, water):
     return total
 
 
+pay_choices = {"credit": ["cr", "credit"], "cash": ["cash", "coins", "ca"]}
+SURCHARGE_MULTIPLIER = 0.05
+TICKET_COST = 5
+SNACK_PROFIT_MULTIPLIER = 0.2
 POPCORN = 2.5
 MMS = 3
 PC = 4.5
@@ -44,9 +73,14 @@ class Person:
         self.ticket_price = price_check(age_)
         self.snack_price = snack_price_(popcorns, mms, pc, waters)
         self.total_price = self.ticket_price + self.snack_price
+        self.surcharge = surcharge(self.total_price)
+        self.total_price += self.surcharge
+        self.profit = (self.ticket_price - TICKET_COST) + (self.snack_price * SNACK_PROFIT_MULTIPLIER)
         print(f"Ticket price: ${self.ticket_price:.2f}")
         print(f"Snack price: ${self.snack_price:.2f}")
+        print(f"Surcharge: ${self.surcharge:.2f}")
         print(f"Total price: ${self.total_price:.2f}")
+        print(f"Profit: ${self.profit:.2f}")
 
 
 # For testing purposes
