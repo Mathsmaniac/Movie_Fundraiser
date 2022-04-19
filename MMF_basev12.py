@@ -1,13 +1,24 @@
 """
-Integrated pricesv4.py
+Export graph to csv
 """
 
-
-# Import statements
 import pandas
 
 
 # Functions
+def instructions():
+    while True:
+        response = check_string(yes_no_dict, "\nWould you like to see the instructions? ")
+        if response != "yes" and response != "no":
+            print("Please enter a valid input")
+        if response == "yes":
+            print(instructionser)
+            return
+        elif response == "no":
+            print("No instructions")
+            return
+
+
 def check_string(valid, question):
     answer = input(question).lower()
     if answer == "x":
@@ -115,11 +126,19 @@ class Person:
         self.snack_price = snack_price_(popcorns, mms, pc, waters)
         self.total_price = self.ticket_price + self.snack_price
         self.surcharge = surcharge(self.total_price)
+        self.snack_profit = self.snack_price * SNACK_PROFIT_MULTIPLIER
+        self.ticket_profit = self.ticket_price - TICKET_COST
         if self.surcharge != 0:
             print(f"There is a surcharge of ${self.surcharge:.2f} for your order due to you using a credit card.")
         self.total_price += self.surcharge
-        self.profit = (self.ticket_price - TICKET_COST) + (self.snack_price * SNACK_PROFIT_MULTIPLIER)
+        self.profit = self.ticket_profit + self.snack_profit
+        print("-----------------------------------------------------")
         print(f"The total price for your order is ${self.total_price:.2f}")
+        print("-----------------------------------------------------")
+        self.total_price = currify(self.total_price)
+        self.snack_price = currify(self.snack_price)
+        self.surcharge = currify(self.surcharge)
+        self.ticket_price = currify(self.ticket_price)
 
 
 def surcharge(amount):
@@ -137,6 +156,10 @@ def surcharge(amount):
         return 0
 
 
+def currify(number):
+    return f"${number:.2f}"
+
+
 # Main routine
 
 # Data structures
@@ -145,7 +168,7 @@ def surcharge(amount):
 
 # Loop to get ticket details:
 
-TICKETS = 5
+TICKETS = 150
 ticket_count = 0
 pay_choices = {"credit": ["cr", "credit"], "cash": ["cash", "coins", "ca"]}
 SURCHARGE_MULTIPLIER = 0.05
@@ -167,6 +190,19 @@ snacks_dict = {"popcorn": ["popcorn", "corn", "1", "p"],
                "m&ms": ["m&ms", "mms", "m", "2"],
                "pita chips": ["pita chips", "chips", "pc", "pita", "c", "3"],
                "water": ["water", "w", "4"]}
+instructionser = "The program will tell you how many of each ticket remain \n" \
+               "The program will ask you your name for each ticket\n" \
+                 "It will then ask you your age, this is to put you in the correct price bracket\n" \
+                 "Then you will be asked whether you would like snacks,\n" \
+                 " the method for ordering snacks is relatively straightforward\n" \
+                 "you will be asked what snack you would like to order," \
+                 " then how many of the snack you would like to order\n" \
+                 "\nThen you will be asked for a valid method of payment\n" \
+                 "be advised that using a credit card will add a 5% surcharge onto your order\n" \
+                 "once each order is complete, you will have the option to quit, by typing 'xxx' when it asks for yo" \
+                 "ur name"
+print("--*-- Welcome to the Mega Movie Fundraiser! --*--")
+instructions()
 while ticket_count != TICKETS and name != "Xxx":
     if TICKETS - ticket_count > 1:
         print(f"\nYou have {TICKETS - ticket_count} tickets left")
@@ -203,12 +239,43 @@ else:
     print("\nYou have sold all the available tickets")
 
 
+print("For more details, check out 'Snack_Profit_Data.csv', and 'All_Data.csv'")
+chonk_zip = zip([item.person for item in names], [item.pc for item in names], [item.popcorns for item in names],
+                [item.waters for item in names], [item.mms for item in names], [item.ticket_price for item in names],
+                [item.snack_price for item in names], [item.surcharge for item in names],
+                [item.total_price for item in names])
+cdf = pandas.DataFrame(chonk_zip, columns=["Name", "Chips", "Popcorn", "Water", "M&Ms",
+                                           "Ticket Cost", "Snack Cost", "Surcharge", "Total Cost"])
+cdf = cdf.set_index("Name")
+try:
+    cdf.to_csv("All_Data.csv")
+except PermissionError:
+    pass
+print("--*-- Summary data --*--")
 zipped = zip([item.person for item in names], [item.ticket_price for item in names],
              [item.snack_price for item in names], [item.surcharge for item in names],
              [item.total_price for item in names])
-df = pandas.DataFrame(zipped, columns=["Name", "Ticket Cost", "Snack Cost", "Surcharge", "Total Cost"])
+df = pandas.DataFrame(zipped, columns=["Name", "Ticket Cost", "Snack Cost",
+                                       "Surcharge", "Total Cost"])
 df = df.set_index("Name")
 print(df)
+print("\n--*-- Snack/Profit summary --*--")
+total_corn = (sum(item.popcorns for item in names))
+total_water = (sum(item.waters for item in names))
+total_mms = (sum(item.mms for item in names))
+total_chips = (sum(item.pc for item in names))
+snack_profits = (sum(item.snack_profit for item in names))
+ticket_profits = (sum(item.ticket_profit for item in names))
+total_profits = (sum(item.profit for item in names))
+snack_dict = [{"Corn": total_corn, "Water": total_water, "M&Ms": total_mms, "Chips": total_chips,
+              "Snack Profit": currify(snack_profits), "Ticket Profit": currify(ticket_profits),
+               "Total Profit": currify(total_profits)}]
+odf = pandas.DataFrame(snack_dict)
+print(odf)
+try:
+    odf.to_csv("Snack_Profit_Data.csv")
+except PermissionError:
+    pass
 
 #   Get age (between 12 and 130)
 
